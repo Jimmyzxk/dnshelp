@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# 一键流媒体解锁脚本 - 针对 A 和 B 机器
+# 一键流媒体解锁脚本 - 针对 A 和 B 机器，支持 Ubuntu、CentOS 和 Debian
 clear
 echo "====================================================="
-echo "  欢迎使用 DNS 流媒体解锁助手 v2.0"
+echo "  欢迎使用 DNS 流媒体解锁助手 v3.0"
 echo "  请根据机器类型选择操作（A 或 B）"
 echo "====================================================="
 echo "A 机器: 解锁 Netflix 的 VPS"
@@ -16,15 +16,17 @@ if [ -f /etc/lsb-release ]; then
     DISTRO="ubuntu"
 elif [ -f /etc/redhat-release ]; then
     DISTRO="centos"
+elif [ -f /etc/debian_version ]; then
+    DISTRO="debian"
 else
     echo "不支持的操作系统，请检查您的系统环境。"
     exit 1
 fi
 
-# 公共功能函数
+# 公共功能函数：安装依赖
 install_dependencies() {
     echo "正在安装依赖..."
-    if [ "$DISTRO" == "ubuntu" ]; then
+    if [ "$DISTRO" == "ubuntu" ] || [ "$DISTRO" == "debian" ]; then
         sudo apt update
         sudo apt install -y net-tools wget iptables
     elif [ "$DISTRO" == "centos" ]; then
@@ -34,7 +36,7 @@ install_dependencies() {
     echo "依赖安装完成！"
 }
 
-# A 机器操作
+# A 机器操作 - 安装和配置 Dnsmasq + SNIproxy
 configure_A() {
     echo "正在配置 A 机器（解锁 Netflix 的 VPS）..."
     install_dependencies
@@ -50,7 +52,7 @@ configure_A() {
     echo "防火墙规则配置完成！仅允许 B 机器访问 DNS 服务。"
     
     # 保存防火墙规则
-    if [ "$DISTRO" == "ubuntu" ]; then
+    if [ "$DISTRO" == "ubuntu" ] || [ "$DISTRO" == "debian" ]; then
         sudo apt install -y iptables-persistent
         sudo netfilter-persistent save
     elif [ "$DISTRO" == "centos" ]; then
@@ -60,7 +62,7 @@ configure_A() {
     echo "A 机器配置完成！"
 }
 
-# B 机器操作
+# B 机器操作 - 修改 DNS 并锁定 resolv.conf
 configure_B() {
     echo "正在配置 B 机器（无法解锁 Netflix 的 VPS）..."
     install_dependencies
@@ -90,5 +92,5 @@ else
 fi
 
 echo "====================================================="
-echo "配置完成！感谢使用 DNS 流媒体解锁助手 v2.0"
+echo "配置完成！感谢使用 DNS 流媒体解锁助手 v3.0"
 echo "====================================================="
